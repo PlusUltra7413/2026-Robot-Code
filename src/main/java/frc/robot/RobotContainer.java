@@ -60,6 +60,9 @@ public class RobotContainer {
                     .withRotationalRate(-joystick.getRightX() * MaxAngularRate) // Drive counterclockwise with negative X (left)
             )
         );
+        joystick.square().onTrue(
+    Commands.runOnce(() -> shooterDirection *= -1)
+);
         
 
 
@@ -74,18 +77,18 @@ motors.setDefaultCommand(
         double leftTrigger = joystick.getL2Axis();
         double rightTrigger = joystick.getR2Axis();
 
-        // Proper deadband to ignore small controller noise
-        leftTrigger = (Math.abs(leftTrigger) < 0.05) ? 0 : leftTrigger;
-        rightTrigger = (Math.abs(rightTrigger) < 0.05) ? 0 : rightTrigger;
-
+        // Apply direction
+        leftTrigger ++;
+        rightTrigger++;
         leftTrigger *= shooterDirection;
-        rightTrigger *= shooterDirection;
+        rightTrigger *= -1; 
 
-        // Only set motor speeds if triggers are pressed
-        motors.setLeftSpeed(leftTrigger);
-        motors.setRightSpeed(rightTrigger);
+        motors.setLeftSpeed(leftTrigger/2);
+        motors.setRightSpeed(rightTrigger/3);
+
+        //System.out.println(leftTrigger);
     }, motors)
-);                                                     
+);                                                    
 
 
         // Idle while the robot is disabled. This ensures the configured
