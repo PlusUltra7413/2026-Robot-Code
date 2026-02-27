@@ -15,12 +15,12 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandPS5Controller;
 import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.PS5Controller;
 import edu.wpi.first.wpilibj2.command.RunCommand;
 
 import frc.robot.subsystems.Shooter;
-
-
+import frc.robot.subsystems.climber;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 
@@ -29,6 +29,7 @@ public class RobotContainer {
     private double MaxAngularRate = RotationsPerSecond.of(0.75).in(RadiansPerSecond); // 3/4 of a rotation per second max angular velocity
 
     private final Shooter motors = new Shooter();
+    private final climber climber = new climber();
 
     /* Setting up bindings for necessary control of the swerve drive platform */
     private final SwerveRequest.FieldCentric drive = new SwerveRequest.FieldCentric()
@@ -60,6 +61,13 @@ public class RobotContainer {
                     .withRotationalRate(-joystick.getRightX() * MaxAngularRate) // Drive counterclockwise with negative X (left)
             )
         );
+            climber.setDefaultCommand(new RunCommand(() -> climber.hold(), climber));
+        
+        joystick.povUp().whileTrue(new RunCommand(() -> climber.climbUp(),   climber))
+             .onFalse(Commands.runOnce(() -> climber.hold(),       climber));
+
+        joystick.povDown().whileTrue(new RunCommand(() -> climber.climbDown(), climber))
+             .onFalse(Commands.runOnce(() -> climber.hold(),       climber));
         joystick.square().onTrue(
     Commands.runOnce(() -> shooterDirection *= -1)
 );
@@ -74,6 +82,10 @@ joystick.cross().onTrue(
 // Default command for shooter motors
 motors.setDefaultCommand(
     new RunCommand(() -> {
+        if (DriverStation.isJoystickConnected(0)) {
+        // Controller is connected
+
+
         double leftTrigger = joystick.getL2Axis();
         double rightTrigger = joystick.getR2Axis();
 
@@ -83,10 +95,10 @@ motors.setDefaultCommand(
         leftTrigger *= shooterDirection;
         rightTrigger *= -1; 
 
-      //  motors.setLeftSpeed(leftTrigger/2);
-       // motors.setRightSpeed(rightTrigger/3);
+       motors.setLeftSpeed(leftTrigger/2);
+       motors.setRightSpeed(rightTrigger/3);
 
-        //System.out.println(leftTrigger);
+        }
     }, motors)
 );                                                    
 
