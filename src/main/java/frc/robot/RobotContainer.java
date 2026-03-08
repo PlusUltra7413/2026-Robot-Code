@@ -29,7 +29,7 @@ public class RobotContainer {
     private double MaxAngularRate = RotationsPerSecond.of(0.75).in(RadiansPerSecond); // 3/4 of a rotation per second max angular velocity
 
     private final Shooter motors = new Shooter();
-    private final climber climber = new climber();
+   // private final climber climber = new climber();
 
     /* Setting up bindings for necessary control of the swerve drive platform */
     private final SwerveRequest.FieldCentric drive = new SwerveRequest.FieldCentric()
@@ -61,6 +61,7 @@ public class RobotContainer {
                     .withRotationalRate(-joystick.getRightX() * MaxAngularRate) // Drive counterclockwise with negative X (left)
             )
         );
+        /** 
             climber.setDefaultCommand(new RunCommand(() -> climber.hold(), climber));
         
         joystick.povUp().whileTrue(new RunCommand(() -> climber.climbUp(),   climber))
@@ -68,6 +69,7 @@ public class RobotContainer {
 
         joystick.povDown().whileTrue(new RunCommand(() -> climber.climbDown(), climber))
              .onFalse(Commands.runOnce(() -> climber.hold(),       climber));
+             **/
         joystick.square().onTrue(
     Commands.runOnce(() -> shooterDirection *= -1)
 );
