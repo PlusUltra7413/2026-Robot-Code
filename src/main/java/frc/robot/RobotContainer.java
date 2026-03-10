@@ -95,10 +95,11 @@ motors.setDefaultCommand(
         leftTrigger ++;
         rightTrigger++;
         leftTrigger *= shooterDirection;
-        rightTrigger *= -1; 
+        rightTrigger *= 1; 
 
-       motors.setLeftSpeed(leftTrigger/2);
-       motors.setRightSpeed(rightTrigger/3);
+       motors.setLeftSpeed(rightTrigger/2);
+       motors.setRightSpeed(rightTrigger/2);
+       motors.setIndexerSpeed(leftTrigger/2);
 
         }
     }, motors)

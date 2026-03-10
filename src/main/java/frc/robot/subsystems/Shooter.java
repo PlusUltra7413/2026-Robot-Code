@@ -14,11 +14,13 @@ import com.ctre.phoenix6.signals.InvertedValue;
 
 public class Shooter extends SubsystemBase {
 
-    private final TalonFX leftMotor = new TalonFX(11);
-    private final TalonFX rightMotor = new TalonFX(10);
+    private final TalonFX leftMotor = new TalonFX(21);
+    private final TalonFX rightMotor = new TalonFX(20);
+    private final TalonFX indexer = new TalonFX(22);
 
     private final DutyCycleOut leftOut = new DutyCycleOut(0);
     private final DutyCycleOut rightOut = new DutyCycleOut(0);
+    private final DutyCycleOut indexout = new DutyCycleOut(0);
 
 
 
@@ -58,6 +60,11 @@ public class Shooter extends SubsystemBase {
     speed = applyDeadband(speed);
     rightOut.Output = speed;
     rightMotor.setControl(rightOut);
+    }
+    public void setIndexerSpeed(double speed) {
+    speed = applyDeadband(speed);
+    indexout.Output = speed;
+    indexer.setControl(indexout);
     }
 
 
