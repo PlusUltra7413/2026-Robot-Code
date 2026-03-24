@@ -149,8 +149,15 @@ motors.setDefaultCommand(
         rightTrigger++;
         leftTrigger *= indexDirection;
         rightTrigger *= shooterDirection;
-        SmartDashboard.putNumber("indexer", indexDirection);
-        SmartDashboard.putNumber("shooter", shooterDirection);
+
+        boolean indexBool = false;
+        boolean shooterbool = false;
+
+        indexBool = (indexDirection == 1);
+        shooterbool = (shooterDirection == 1);
+
+        SmartDashboard.putBoolean("indexer", indexBool);
+        SmartDashboard.putBoolean("shooter", shooterbool);
         rightTrigger *= 1; 
 
         double MAX_SHOOTER_RPS = 80.0; // tune this to your desired top speed (0-100)
