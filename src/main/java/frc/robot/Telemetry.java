@@ -2,6 +2,8 @@ package frc.robot;
 
 import com.ctre.phoenix6.SignalLogger;
 import com.ctre.phoenix6.swerve.SwerveDrivetrain.SwerveDriveState;
+import org.littletonrobotics.junction.Logger;
+
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
@@ -22,6 +24,9 @@ import edu.wpi.first.wpilibj.util.Color8Bit;
 
 public class Telemetry {
     private final double MaxSpeed;
+        //advatagelib
+        private SwerveDriveState m_lastState = new SwerveDriveState();
+
 
     /**
      * Construct a telemetry object, with the specified max speed of the robot
@@ -85,8 +90,22 @@ public class Telemetry {
     private final double[] m_poseArray = new double[3];
 
     /** Accept the swerve drive state and telemeterize it to SmartDashboard and SignalLogger. */
+    private int m_callcount = 0;
+
     public void telemeterize(SwerveDriveState state) {
+        m_callcount++;
+        m_lastState = state;
         /* Telemeterize the swerve drive state */
+        
+
+        // Keep logging to SignalLogger (CTRE's own log file) as well
+        SignalLogger.writeStruct("DriveState/Pose", Pose2d.struct, state.Pose);
+        SignalLogger.writeStruct("DriveState/Speeds", ChassisSpeeds.struct, state.Speeds);
+        SignalLogger.writeStructArray("DriveState/ModuleStates", SwerveModuleState.struct, state.ModuleStates);
+        SignalLogger.writeStructArray("DriveState/ModuleTargets", SwerveModuleState.struct, state.ModuleTargets);
+        SignalLogger.writeStructArray("DriveState/ModulePositions", SwerveModulePosition.struct, state.ModulePositions);
+        SignalLogger.writeDouble("DriveState/OdometryPeriod", state.OdometryPeriod, "seconds");
+
         drivePose.set(state.Pose);
         driveSpeeds.set(state.Speeds);
         driveModuleStates.set(state.ModuleStates);
@@ -96,12 +115,14 @@ public class Telemetry {
         driveOdometryFrequency.set(1.0 / state.OdometryPeriod);
 
         /* Also write to log file */
+        /** 
         SignalLogger.writeStruct("DriveState/Pose", Pose2d.struct, state.Pose);
         SignalLogger.writeStruct("DriveState/Speeds", ChassisSpeeds.struct, state.Speeds);
         SignalLogger.writeStructArray("DriveState/ModuleStates", SwerveModuleState.struct, state.ModuleStates);
         SignalLogger.writeStructArray("DriveState/ModuleTargets", SwerveModuleState.struct, state.ModuleTargets);
         SignalLogger.writeStructArray("DriveState/ModulePositions", SwerveModulePosition.struct, state.ModulePositions);
         SignalLogger.writeDouble("DriveState/OdometryPeriod", state.OdometryPeriod, "seconds");
+        */
 
         /* Telemeterize the pose to a Field2d */
         fieldTypePub.set("Field2d");
@@ -110,6 +131,7 @@ public class Telemetry {
         m_poseArray[1] = state.Pose.getY();
         m_poseArray[2] = state.Pose.getRotation().getDegrees();
         fieldPub.set(m_poseArray);
+        System.out.print(m_poseArray);
 
         /* Telemeterize each module state to a Mechanism2d */
         for (int i = 0; i < 4; ++i) {
@@ -117,5 +139,24 @@ public class Telemetry {
             m_moduleDirections[i].setAngle(state.ModuleStates[i].angle);
             m_moduleSpeeds[i].setLength(state.ModuleStates[i].speedMetersPerSecond / (2 * MaxSpeed));
         }
+    }
+    public void logToAdvantageKit(){
+        if (m_lastState == null) return;
+
+        Logger.recordOutput("DriveState/Pose", m_lastState.Pose);
+        Logger.recordOutput("DriveState/pose", m_lastState.Pose.getX());
+        Logger.recordOutput("DriveState/pose", m_lastState.Pose.getY());
+        Logger.recordOutput("DriveState/pose", m_lastState.Pose.getRotation().getDegrees());
+
+        Logger.recordOutput("DriveState/Speeds", m_lastState.Speeds);
+        Logger.recordOutput("DriveState/ModuleStates", m_lastState.ModuleStates);
+        Logger.recordOutput("DriveState/ModuleTargets", m_lastState.ModuleTargets);
+        Logger.recordOutput("DriveState/ModulePositions", m_lastState.ModulePositions);
+        Logger.recordOutput("DriveState/Timestamp", m_lastState.Timestamp);
+        Logger.recordOutput("DriveState/OdometryFrequency", 1.0 / m_lastState.OdometryPeriod);
+    }
+    public void telemLog() {
+    Logger.recordOutput("Telemetry/CallCount", m_callcount);
+    logToAdvantageKit();
     }
 }

@@ -4,6 +4,13 @@
 
 package frc.robot;
 
+import org.littletonrobotics.junction.LogFileUtil;
+import org.littletonrobotics.junction.LoggedRobot;
+import org.littletonrobotics.junction.Logger;
+import org.littletonrobotics.junction.networktables.NT4Publisher;
+import org.littletonrobotics.junction.wpilog.WPILOGReader;
+import org.littletonrobotics.junction.wpilog.WPILOGWriter;
+
 import com.ctre.phoenix6.HootAutoReplay;
 
 import edu.wpi.first.wpilibj.DriverStation;
@@ -13,9 +20,8 @@ import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 
-public class Robot extends TimedRobot {
+public class Robot extends LoggedRobot {
     private Command m_autonomousCommand;
-
     private final RobotContainer m_robotContainer;
 
     /* log and replay timestamp and joystick data */
@@ -24,6 +30,24 @@ public class Robot extends TimedRobot {
         .withJoystickReplay();
 
     public Robot() {
+        Logger.recordMetadata("ProjectName", "ScourgeOfTheSeas");
+        Logger.recordMetadata("TeamNumber", "7413");
+        
+        
+
+        if (isReal()) {
+            Logger.addDataReceiver(new WPILOGWriter());  // logs to USB stick at /U/logs
+            Logger.addDataReceiver(new NT4Publisher());  // live data to AdvantageScope
+        } else {
+            setUseTiming(false);
+            String logPath = LogFileUtil.findReplayLog();
+            Logger.setReplaySource(new WPILOGReader(logPath));
+            Logger.addDataReceiver(new WPILOGWriter(LogFileUtil.addPathSuffix(logPath, "_sim")));
+        }
+
+        Logger.start();
+        //no more advatageLib can be added after this
+
         m_robotContainer = new RobotContainer();
         RobotController.setBrownoutVoltage(7);
     }
@@ -32,6 +56,8 @@ public class Robot extends TimedRobot {
     public void robotPeriodic() {
         m_timeAndJoystickReplay.update();
         CommandScheduler.getInstance().run(); 
+        m_robotContainer.logger.telemLog();
+       Logger.recordOutput("testvalue", 1234.0);
     }
 
     @Override
