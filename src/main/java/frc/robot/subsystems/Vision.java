@@ -4,6 +4,7 @@ import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
+import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.lib.LimelightHelpers;
@@ -27,6 +28,7 @@ public class Vision extends SubsystemBase {
 
     // ── Change this if your Limelight has a different hostname ────────────────
     private static final String LIMELIGHT_NAME = "limelight";
+    private static final Field2d field = new Field2d();
 
     // ── Reject measurements with avg tag distance beyond this (meters) ────────
     private static final double MAX_TAG_DISTANCE_M = 4.0;
@@ -41,11 +43,13 @@ public class Vision extends SubsystemBase {
 
     public Vision(CommandSwerveDrivetrain drivetrain) {
         this.drivetrain = drivetrain;
+        SmartDashboard.putData("Field Value", field);
     }
 
     @Override
     public void periodic() {
         updatePoseEstimation();
+        field.setRobotPose(drivetrain.getState().Pose);
     }
 
     /**
@@ -67,6 +71,9 @@ public class Vision extends SubsystemBase {
         // Read MegaTag2 pose (always field-relative, blue-alliance origin)
         PoseEstimate estimate =
             LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2(LIMELIGHT_NAME);
+
+        if (estimate == null) return;
+
 
         // Reject bad estimates
         if (!isValidEstimate(estimate)) {

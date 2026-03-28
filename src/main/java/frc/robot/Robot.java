@@ -54,6 +54,7 @@ public class Robot extends LoggedRobot {
 
     @Override
     public void robotPeriodic() {
+        System.out.print("robot perodic");
         m_timeAndJoystickReplay.update();
         CommandScheduler.getInstance().run(); 
         m_robotContainer.logger.telemLog();
@@ -71,16 +72,23 @@ public class Robot extends LoggedRobot {
 
     @Override
     public void autonomousInit() {
-        System.out.println("Auto command: " + m_robotContainer.getAutonomousCommand());
+        System.out.print("AUTO INIT RAN");
+       // System.out.println("Auto command: " + m_robotContainer.getAutonomousCommand());
         m_autonomousCommand = m_robotContainer.getAutonomousCommand();
 
         if (m_autonomousCommand != null) {
+            System.out.print("auto schedule");
             CommandScheduler.getInstance().schedule(m_autonomousCommand);
+        }
+        else{
+            System.out.print("auto command is null");
         }
     }
 
     @Override
-    public void autonomousPeriodic() {}
+    public void autonomousPeriodic() {
+        System.out.print("autoPerodic");
+    }
 
     @Override
     public void autonomousExit() {}

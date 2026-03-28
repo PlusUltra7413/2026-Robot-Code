@@ -22,6 +22,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.RunCommand;
+import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.button.CommandPS5Controller;
 import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
@@ -30,8 +31,11 @@ import frc.robot.generated.TunerConstants;
 import frc.robot.lib.SwerveTelemetry;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.Shooter;
+import frc.robot.subsystems.Vision;
 
 public class RobotContainer {
+
+    
 
     // ── Speeds ────────────────────────────────────────────────────────────────
     private final double MaxSpeed = TunerConstants.kSpeedAt12Volts.in(MetersPerSecond);
@@ -47,6 +51,8 @@ public class RobotContainer {
     // private final climber climber = new climber();
 
     public final CommandSwerveDrivetrain drivetrain = TunerConstants.createDrivetrain();
+
+    private final Vision vision = new Vision(drivetrain);
 
     // ── Swerve requests ───────────────────────────────────────────────────────
     private final SwerveRequest.FieldCentric drive = new SwerveRequest.FieldCentric()
@@ -93,7 +99,7 @@ public class RobotContainer {
 
         autoChooser = new AutoChooser();
         // ── Add more routines here as you create .traj files in deploy/choreo/ ──
-        autoChooser.addRoutine("MyPath", () -> myPathAuto(autoFactory));
+        //autoChooser.addRoutine("MyPath", () -> myPathAuto(autoFactory));
 
         SmartDashboard.putData("Auto Chooser", autoChooser);
 
@@ -190,15 +196,27 @@ public class RobotContainer {
     // ── Autonomous ────────────────────────────────────────────────────────────
 
     public Command getAutonomousCommand() {
-        return autoChooser.selectedCommandScheduler();
+        final double AUTO_SHOOTER_RPS = 70.0;
+        return new SequentialCommandGroup(
+        Commands.run(() -> {
+            drivetrain.seedFieldCentric();
+            drive.withVelocityX(-0.5 * MaxSpeed);
+        }, drivetrain).withTimeout(1),
+        Commands.run(() -> {
+            motors.setLeftSpeed(AUTO_SHOOTER_RPS);
+            motors.setRightSpeed(AUTO_SHOOTER_RPS);
+            motors.setIndexerSpeed(0.5);
+        }, motors)
+        );
     }
-
+    
     /**
      * Follow the "MyPath" Choreo trajectory.
      * Rename this method and the trajectory string to match each .traj file
      * you add to src/main/deploy/choreo/.
      */
-    private AutoRoutine myPathAuto(AutoFactory factory) {
+    
+    private AutoRoutine MyPath(AutoFactory factory) {
         var routine = factory.newRoutine("MyPath");
         var traj    = routine.trajectory("MyPath"); // must match MyPath.traj filename
 
@@ -211,4 +229,5 @@ public class RobotContainer {
 
         return routine;
     }
+    
 }
