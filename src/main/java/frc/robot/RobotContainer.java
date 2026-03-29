@@ -20,6 +20,7 @@ import edu.wpi.first.networktables.StructPublisher;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
@@ -32,6 +33,8 @@ import frc.robot.lib.SwerveTelemetry;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.Shooter;
 import frc.robot.subsystems.Vision;
+
+// import com.pathplanner.
 
 public class RobotContainer {
 
@@ -53,6 +56,7 @@ public class RobotContainer {
     public final CommandSwerveDrivetrain drivetrain = TunerConstants.createDrivetrain();
 
     private final Vision vision = new Vision(drivetrain);
+    private Command _autonomousCommand;
 
     // ── Swerve requests ───────────────────────────────────────────────────────
     private final SwerveRequest.FieldCentric drive = new SwerveRequest.FieldCentric()
@@ -99,7 +103,8 @@ public class RobotContainer {
 
         autoChooser = new AutoChooser();
         // ── Add more routines here as you create .traj files in deploy/choreo/ ──
-        //autoChooser.addRoutine("MyPath", () -> myPathAuto(autoFactory));
+        SmartDashboard.putData("Auto Chooser", autoChooser);
+        autoChooser.addRoutine("leave", () -> MyPath(autoFactory));
 
         SmartDashboard.putData("Auto Chooser", autoChooser);
 
@@ -197,17 +202,24 @@ public class RobotContainer {
 
     public Command getAutonomousCommand() {
         final double AUTO_SHOOTER_RPS = 70.0;
-        return new SequentialCommandGroup(
-        Commands.run(() -> {
-            drivetrain.seedFieldCentric();
-            drive.withVelocityX(-0.5 * MaxSpeed);
-        }, drivetrain).withTimeout(1),
-        Commands.run(() -> {
+
+        return Commands.sequence(
+           // drivetrain.applyRequest(() -> drive.withVelocityX(-0.5 * MaxSpeed).withVelocityY(0).withRotationalRate(0))
+           // .withTimeout(1).andThen(drivetrain.applyRequest(() -> drive.withVelocityX(0).withVelocityY(0).withRotationalRate(0))).withTimeout(1),
+            Commands.run(() -> {
+            System.out.print("auto");
             motors.setLeftSpeed(AUTO_SHOOTER_RPS);
             motors.setRightSpeed(AUTO_SHOOTER_RPS);
             motors.setIndexerSpeed(0.5);
         }, motors)
         );
+        /*
+        return Commands.run(() -> {
+            motors.setLeftSpeed(AUTO_SHOOTER_RPS);
+            motors.setRightSpeed(AUTO_SHOOTER_RPS);
+            motors.setIndexerSpeed(0.5);
+        }, motors);
+        */
     }
     
     /**
@@ -216,9 +228,15 @@ public class RobotContainer {
      * you add to src/main/deploy/choreo/.
      */
     
+     public void autonomousInit() {
+        _autonomousCommand = autoChooser.selectedCommand();
+        if (_autonomousCommand != null) {
+            CommandScheduler.getInstance().schedule(_autonomousCommand);
+        }
+     }
     private AutoRoutine MyPath(AutoFactory factory) {
-        var routine = factory.newRoutine("MyPath");
-        var traj    = routine.trajectory("MyPath"); // must match MyPath.traj filename
+        var routine = factory.newRoutine("leave");
+        var traj    = routine.trajectory("leave"); // must match MyPath.traj filename
 
         routine.active().onTrue(
             Commands.sequence(
@@ -229,5 +247,21 @@ public class RobotContainer {
 
         return routine;
     }
+
+    //  private AutoRoutine MyPathPlanner(AutoFactory factory) {
+    //     PathPlannerPath leave = PathPlanner.fromChoreoTrajectory("leave");
+    //     var routine = factory.newRoutine("leave");
+    //     var traj    = routine.trajectory("leave"); // must match MyPath.traj filename
+
+    //     routine.active().onTrue(
+    //         Commands.sequence(
+    //             traj.resetOdometry(), // snap odometry to path start pose
+    //             traj.cmd()            // follow the path
+    //         )
+    //     );
+
+    //     return routine;
+    // }
+        
     
 }

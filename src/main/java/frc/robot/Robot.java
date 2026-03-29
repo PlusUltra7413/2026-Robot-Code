@@ -20,6 +20,10 @@ import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 
+import edu.wpi.first.cameraserver.CameraServer;
+import edu.wpi.first.wpilibj.TimedRobot;
+
+
 public class Robot extends LoggedRobot {
     private Command m_autonomousCommand;
     private final RobotContainer m_robotContainer;
@@ -30,6 +34,9 @@ public class Robot extends LoggedRobot {
         .withJoystickReplay();
 
     public Robot() {
+
+        CameraServer.startAutomaticCapture();
+
         Logger.recordMetadata("ProjectName", "ScourgeOfTheSeas");
         Logger.recordMetadata("TeamNumber", "7413");
         
@@ -55,6 +62,7 @@ public class Robot extends LoggedRobot {
     @Override
     public void robotPeriodic() {
         System.out.print("robot perodic");
+      //  CameraServer.startAutomaticCapture();
         m_timeAndJoystickReplay.update();
         CommandScheduler.getInstance().run(); 
         m_robotContainer.logger.telemLog();
@@ -72,17 +80,17 @@ public class Robot extends LoggedRobot {
 
     @Override
     public void autonomousInit() {
-        System.out.print("AUTO INIT RAN");
-       // System.out.println("Auto command: " + m_robotContainer.getAutonomousCommand());
-        m_autonomousCommand = m_robotContainer.getAutonomousCommand();
+    //     ]
+       m_robotContainer.autonomousInit();
+        // m_autonomousCommand = m_robotContainer.getAutonomousCommand();
 
-        if (m_autonomousCommand != null) {
-            System.out.print("auto schedule");
-            CommandScheduler.getInstance().schedule(m_autonomousCommand);
-        }
-        else{
-            System.out.print("auto command is null");
-        }
+        // if (m_autonomousCommand != null) {
+        //     System.out.print("auto schedule");
+        //     CommandScheduler.getInstance().schedule(m_autonomousCommand);
+        // }
+        // else{
+        //     System.out.print("auto command is null");
+        // }
     }
 
     @Override
